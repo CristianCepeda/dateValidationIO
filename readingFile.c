@@ -10,26 +10,40 @@ enum ASCII{NEGATIVE_ASCII = 45, ZERO_ASCII = 48, NINE_ASCII = 57};
 enum VALIDATE{VALID_PASS = 1, VALID_FAIL = 0};
 
 
+
 // prototypes
+int validateIndividualNumber(char value[]);
+
 void validateStringMonth(char value[]);
-void validateMonth(int value);
-
 void validateStringDay(char value[]);
-void validateDay(int value);
+void validateStringYear(char value[]);
 
-int validateNumber(char value[]);
+void validateIntegerMonth(int value);
+void validateIntegerDay(int value);
+void validateIntegerYear(long int value);
+
+
 
 int main(void) {
 
-  char strMonth[10]= "";
-  char strDay[10] = "";
-  char strYear[10] = "";
-  char date[22] = "";
+  printf("This is the max integer: %d\n", INT_MAX);
+  printf("This is the min integer: %d\n", INT_MIN);
+  printf("%s\n", "");
+
+  char date[42] = "";
 
   printf("%s", "Enter a date: ");
   scanf ("%[^\n]%*c", date);
   printf("%s\n", "");
   printf("The date entered is %s\n", date);
+
+
+  printf("%s\n", "");
+  validateDate(date);
+
+  char strMonth[14]= "";
+  char strDay[14] = "";
+  char strYear[14] = "";
 
   printf("%s\n", "");
   strcpy(strMonth, strtok(date,"/"));
@@ -41,56 +55,54 @@ int main(void) {
 
   int numMonth = 0;
   int numDay = 0;
-  int numYear = 0;
+  long int numYear = 0;
 
   printf("%s\n", "");
   printf("%s\n", "This is the date entered in int values");
   numMonth = atoi(strMonth);
   numDay = atoi(strDay);
-  numYear = atoi(strYear);
-  printf("%d/%d/%d\n", numMonth,numDay,numYear);
+  numYear = atol(strYear);
+  printf("%d/%d/%ld\n", numMonth,numDay,numYear);
+
 
   printf("%s\n", "");
   validateStringMonth(strMonth);
-  validateMonth(numMonth);
-  printf("%s\n", "");
   validateStringDay(strDay);
-  validateDay(numDay);
+  validateStringYear(strYear);
+  printf("%s\n", "");
+  validateIntegerMonth(numMonth);
+  validateIntegerDay(numDay);
+  validateIntegerYear(numYear);
   printf("%s\n", "");
   return 0;
 }
+// You may need to validate a date that is inputed in this format
+//            1-2/13-1/1111
 
-void validateStringMonth(char value[]){
-  int answer = validateNumber(value);
-  if (answer == VALID_FAIL) {
-    printf("%s\n", "Somthing is wrong with the String Month Date");
-  }
-}
-void validateMonth(int value){
-  if (value < 1 || value > 12) {
-    printf("%s\n", "Month entered is incorrect");
-    // some how skip this date and dont save
-  }else{
-    printf("%s\n", "Month entered is valid");
-  }
-}
+int validateDate(char value[]){
+  // if the date is wrong skip and advance to the next date.
 
-void validateStringDay(char value[]){
-  int answer = validateNumber(value);
-  if (answer == VALID_FAIL) {
-    printf("%s\n", "Somthing is wrong with the String Day Date");
-  }
-}
-void validateDay(int value) {
-  if (value < 1 || value > 31) {
-    printf("%s\n", "Day entered is incorrect");
-    // some how skip this date and dont save
-  }else{
-    printf("%s\n", "Day entered is valid");
-  }
-}
 
-int validateNumber(char value[]){
+}
+/*---------------------------- validateIndividualNumber ----------------------------
+  int validateIndividualNumber(char value[])
+  |
+  |  Purpose:  This function receives as a parameter an array holding the
+  |            specific part of the date that will be checked. Have it be the
+  |            month, day, or year. It will loop through each character and
+  |            check it to see that it is only and integer in the range of 0-9
+  |            or a negative sign. If any other character is encountered then
+  |            it returns VALID_FAIL otherwise then it returns VALID_PASS.
+  |
+  |  @param  char value[] (IN) -- This parameter is the string array holding
+  |                        the characters for the specific date to be checked.
+  |                        Have it be Month, Day, or Year.
+  |
+  |  @return This function returns the value stored in VALID_FAIL or in
+  |          VALID_PASS based on what it determined through the test of the
+  |          string array.
+  *-------------------------------------------------------------------*/
+int validateIndividualNumber(char value[]){
   int charON = 0;
   while (value[charON] != '\0') {
     int charValue = value[charON];
@@ -100,7 +112,7 @@ int validateNumber(char value[]){
       if(charValue == NEGATIVE_ASCII){
         charON++;
       } else {
-        // have each indivual call print out the message of what went wrong
+        // have each individual call print out the message of what went wrong
         // printf("%s\n", "Something is wrong with the string value for the month");
         return VALID_FAIL; // lets say 0 is a VALID_FAIL
       }
@@ -110,9 +122,75 @@ int validateNumber(char value[]){
   }
   return VALID_PASS; // lets say 1 is a VALID_PASS
 }
+/*---------------------------- validateStringMonth ----------------------------
+  void validateStringMonth(char value[])
+  |
+  |  Purpose:  This function receives as a parameter an array holding the
+  |            the month date that is being checked. It then uses this value
+  |            and passes it as a parameter to the function validateIndividualNumber.
+  |            If the function validateIndividualNumber returns VALID_FAIL then it prints
+  |            out that something is wrong with the inputed month date.
+  |
+  |  @param  char value[] (IN) -- This parameter is the string array holding
+  |                        the characters for the specific Month date to be
+  |                        checked.
+  |
+  |  @return This function prints out a string saying something is wrong with
+  |          the String Month date if something was wrong else it doesn't do
+  |          anything hence it passed the test.
+  *-------------------------------------------------------------------*/
+void validateStringMonth(char value[]){
+  int answer = validateIndividualNumber(value);
+  if (answer == VALID_FAIL) {
+    printf("%s\n", "Something is wrong with the String Month Date");
+  }
+}
+void validateStringDay(char value[]){
+  int answer = validateIndividualNumber(value);
+  if (answer == VALID_FAIL) {
+    printf("%s\n", "Something is wrong with the String Day Date");
+  }
+}
+void validateStringYear(char value[]){
+  // this should check that the year only holds the valid chracters which are
+  // numbers from 0-9 or the negative sign.
+  int answer = validateIndividualNumber(value);
+  if (answer == VALID_FAIL) {
+    printf("%s\n", "Something is wrong with the String Year Date");
+  }
+}
+
+void validateIntegerMonth(int value){
+  if (value < 1 || value > 12) {
+    printf("%s\n", "Month entered is incorrect");
+    // some how skip this date and don't save
+  }else{
+    printf("%s\n", "Month entered is valid");
+  }
+}
+void validateIntegerDay(int value) {
+  if (value < 1 || value > 31) {
+    printf("%s\n", "Day entered is incorrect");
+    // some how skip this date and don't save
+  }else{
+    printf("%s\n", "Day entered is valid");
+  }
+}
+void validateIntegerYear(long int value){
+  /* you are passing it as a long int becasue if you pass it as an int then it
+     would have converted any number pass INT_MIN or INT_MAX into a valid
+     number. I think this had to do with how atoi() was converting the string
+     into an integer so you changed it to atol(); */
+  if (value < INT_MIN || value > INT_MAX) {
+    printf("%s\n", "Year entered is incorrect");
+  }else{
+    printf("%s\n", "Year entered is valid");
+  }
+}
 
 
-/********************* This could be helpfull dont delete ********************
+
+/********************* This could be helpful don't delete ********************
 ******** 1. ********
 // atoi does read negative numbers
 // char date[]= "-24";
@@ -142,7 +220,7 @@ be
     - "1a" then it will return 1
     - "12a" then it will return 12
     - "1a2" then it will return 1
-Based on what i can see it will read any number correct untill it reaches
+Based on what i can see it will read any number correct until it reaches
 letters. If it encounters letters first then the answer will be 0.
 ****************************** Test program ********************************
 int val;
@@ -158,15 +236,10 @@ printf("String value = %s, Int value = %d\n", str, val);
 ****************************************************************************
 ****************************************************************************/
 
-/************* FOR VALIDATION *******************
-have it scan the date and then pass each number into the validation function
-void validateDate(int mon)
-*/
-
 // feof function 445, 458
 
-/******* somthing you thought might work
-// // you might need to modify the 8 so that it can recieve the INT_MIN or INT_MAX
+/******* something you thought might work
+// // you might need to modify the 8 so that it can receive the INT_MIN or INT_MAX
 //   char date[3][8];
 //
 //   char str[80] = "12-12-1111";
