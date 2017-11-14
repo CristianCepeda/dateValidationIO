@@ -1,88 +1,243 @@
+hellloooo
+
+/*  the characters array where the date that is read will be stored in will
+have the max length of 30 characters. */
+
+/* COMMAND FOR THE TERMINAL
+      -  gcc read.c -o read  // Using c99 becasue i dont want to do implicit declaration
+      -  ./read < dates.dat 2
+      -  ./read < dates.dat 2 | ./write > output.dat
+*/
+
+/* THINGS STILL MISSING
+  - you need to validate for leap years
+  - depending on the number the user inputs you have to loop
+    through and print out that number of dates to the second Program
+  */
+
 #include <stdio.h> //
 #include <stdlib.h> // used for atoi();
 #include <string.h> // pg350[DD] used for strcpy();
-#include <limits.h> // used to get INT_MIN and INT_MAX
+#include <limits.h> // used to get INT_MIN -2147483648 and INT_MAX 2147483647
 
 // ENUMS CONSTANTS
 // months work
 enum MONTHS {JAN = 1, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
-enum ASCII{NEGATIVE_ASCII = 45, ZERO_ASCII = 48, NINE_ASCII = 57};
-enum VALIDATE{VALID_PASS = 1, VALID_FAIL = 0};
-
-
+enum ASCII {NEGATIVE_ASCII = 45, FOWARD_SLASH = 47, ZERO_ASCII = 48, NINE_ASCII = 57};
+enum VALIDATE {VALID_PASS = 1, VALID_FAIL = 0};
+enum COMMAND_LINE_VALIDATE {FAIL = 0, PASS = 1};
+enum NUMBER_OF_ARGUMENTS_READ {numOfArgumentsRead = 2};
 
 // prototypes
+int validateCommandLineArg(int argc, char * argv[]);
+int checkForTwoArguments(int argc, char * argv[]);
+int checkForOnlyNumbers(int argc, char * argv[]);
+
+int validateDate(char dateValue[]);
+int validateTwoFowardSlash(char value[]);
+int validateStringMonth(char value[]);
+int validateIntegerMonth(int value);
+int validateStringDay(char value[]);
+int validateIntegerDay(int value);
+int validateStringYear(char value[]);
+int validateIntegerYear(long int value);
 int validateIndividualNumber(char value[]);
+void convertDate(char dateValue[], char convertedValue[]);
 
-void validateStringMonth(char value[]);
-void validateStringDay(char value[]);
-void validateStringYear(char value[]);
+/* else loop through the pointer and read each sentence */
 
-void validateIntegerMonth(int value);
-void validateIntegerDay(int value);
-void validateIntegerYear(long int value);
+int main(int argc, char *argv[]) {
+  if (validateCommandLineArg(argc,argv) == FAIL) {
+    return FAIL;
+  }
+  FILE *dfPtr;
 
-
-
-int main(void) {
-
-  printf("This is the max integer: %d\n", INT_MAX);
-  printf("This is the min integer: %d\n", INT_MIN);
-  printf("%s\n", "");
-
-  char date[42] = "";
-
-  printf("%s", "Enter a date: ");
-  scanf ("%[^\n]%*c", date);
-  printf("%s\n", "");
-  printf("The date entered is %s\n", date);
-
-
-  printf("%s\n", "");
-  validateDate(date);
-
-  char strMonth[14]= "";
-  char strDay[14] = "";
-  char strYear[14] = "";
-
-  printf("%s\n", "");
-  strcpy(strMonth, strtok(date,"/"));
-  strcpy(strDay, strtok(NULL,"/"));
-  strcpy(strYear, strtok(NULL,"/"));
-  printf("The string month entered is %s\n", strMonth);
-  printf("The string day entered is %s\n", strDay);
-  printf("The string year entered is %s\n", strYear);
-
-  int numMonth = 0;
-  int numDay = 0;
-  long int numYear = 0;
-
-  printf("%s\n", "");
-  printf("%s\n", "This is the date entered in int values");
-  numMonth = atoi(strMonth);
-  numDay = atoi(strDay);
-  numYear = atol(strYear);
-  printf("%d/%d/%ld\n", numMonth,numDay,numYear);
-
-
-  printf("%s\n", "");
-  validateStringMonth(strMonth);
-  validateStringDay(strDay);
-  validateStringYear(strYear);
-  printf("%s\n", "");
-  validateIntegerMonth(numMonth);
-  validateIntegerDay(numDay);
-  validateIntegerYear(numYear);
-  printf("%s\n", "");
+  if((dfPtr = fopen("dates.dat", "r")) == NULL){
+    printf("%s\n", "File could not be opened");
+  } else{
+    while (!feof(dfPtr)) {
+      char strOldDate[30] = "";
+      char strCpyDate[30] = ""; // array holding a copy of the date
+      fscanf(dfPtr, "%[^\n]%*c", strOldDate);
+      strcpy(strCpyDate, strOldDate);
+      if (validateDate(strOldDate) == VALID_FAIL){
+        /* Do nothing becasue the date is invalid and move on to the next date */
+      } else {
+        char strNewDate[30] = "";
+        convertDate(strCpyDate, strNewDate);
+        // The date is correct
+        printf("%s\n", strNewDate);
+      } // end else
+    } // end while
+    fclose(dfPtr);
+  } // end else
   return 0;
 }
-// You may need to validate a date that is inputed in this format
-//            1-2/13-1/1111
 
-int validateDate(char value[]){
-  // if the date is wrong skip and advance to the next date.
+// This was got from Assignment4/PokerGame_MainFile.c
+int validateCommandLineArg(int argc, char * argv[]){
+  if (checkForTwoArguments(argc,argv) == FAIL) {
+    return FAIL; // didnt work is the number 0
+  } else if (checkForOnlyNumbers(argc,argv) == FAIL) {
+    return FAIL; // didnt work is the number 0
+  }
+  return PASS; // if it worked then return 1
+}
+int checkForTwoArguments(int argc, char * argv[]){
+  if (argc != numOfArgumentsRead) {
+    printf("%s\n%s\n\n",
+    "Incorrect input please run the program again with the",
+    "correct number of arguments.");
+    printf("%s\n\n", "Example of correct input is: ./v1R.c < dates.dat 2");
+    printf("%s\n%s\n", "Where the number is the number of valid days you want",
+    "converted and outputed to a file named output.dat");
+    printf("%s\n", "");
+    return FAIL; // didnt work is the number 0
+  }
+  // *********** This was from the PokerGame_MainFile.c ***********=
+  // else if (argc == numOfArgumentsRead){
+  //   printf("\nThis is the cards per player desired: %s\n", argv[1]);
+  //   printf("This is the number of players desired: %s\n", argv[2]);
+  // }
+  return PASS; // if it worked then return 1
+}
+int checkForOnlyNumbers(int argc, char * argv[]){
+  // ********* CHECK IF THERE IS ANYTHING INPUTED BESIDES NUMBERS *************
+  size_t row, column;
+  for(row = 1; row < argc; row++){
+    for(column = 0; argv[row][column] != '\0'; column++){
+      int valueOfArgv = argv[row][column];
+      if (valueOfArgv < ZERO_ASCII || valueOfArgv > NINE_ASCII ) { //57 is 9 and 48 is 0 in ascii
+        printf("\n%s\n", "***************************************************");
+        printf("%s\n%s\n", "There was an incorrect input value. Only positive",
+        "whole values are accepted.");
+        printf("\n");
+        printf("%s\n\n", "***************************************************");
+        return FAIL; // didnt work is the number 0
+      }
+    }
+  }
+  return PASS; // if it worked then return 1
+}
 
+int validateDate(char dateValue[]){
+  char strMonth[14] = "";
+  char strDay[14] = "";
+  char strYear[14] = "";
+  int numMonth = 0;
+  int numDay = 0;
+  /* using long int so it can store a year bigger than INT_MAX or INT_MIN and
+     then it can iterpret that number and see if something is wrong with it */
+  long int numYear = 0;
 
+  // IF THIS TEST FAILS JUST RETURN AND DONT KEEP VALIDATING
+  if(validateTwoFowardSlash(dateValue) == VALID_FAIL){
+    return VALID_FAIL;
+  }
+
+  //printf("This is how the string look as soon as you pass it %s\n", dateValue);
+  strcpy(strMonth, strtok(dateValue,"/"));
+  strcpy(strDay, strtok(NULL,"/"));
+  strcpy(strYear, strtok(NULL,"/"));
+  numMonth = atoi(strMonth);
+  numDay = atoi(strDay);
+  /* Same using string converter to long so that it can interpret a year bigger
+     than INT_MAX or INT_MIN */
+  numYear = atol(strYear);
+
+  if (validateStringMonth(strMonth) == VALID_FAIL){return VALID_FAIL;}
+  else if (validateIntegerMonth(numMonth) == VALID_FAIL){return VALID_FAIL;}
+  else if (validateStringDay(strDay) == VALID_FAIL){return VALID_FAIL;}
+  else if (validateIntegerDay(numDay) == VALID_FAIL){return VALID_FAIL;}
+  else if (validateStringYear(strYear) == VALID_FAIL){return VALID_FAIL;}
+  else if (validateIntegerYear(numYear) == VALID_FAIL){return VALID_FAIL;}
+  return VALID_PASS;
+}
+int validateTwoFowardSlash(char value[]){
+  int TWO_FOWARD_SLASH = 2;
+  int charON = 0;
+  int countOfFowardSlash = 0;
+
+  // FIND THE SUM OF FOWARD SLASH
+  while (value[charON] != '\0') {
+    int charValue = value[charON];
+    if (charValue != FOWARD_SLASH){
+      charON++;
+    } else if (charValue == FOWARD_SLASH){
+      countOfFowardSlash++;
+      charON++;
+    } else {
+      charON++;
+    } // end else
+  } // end while
+  // COUNT MUST BE TWO TO PASS THE TEST
+  if(countOfFowardSlash != TWO_FOWARD_SLASH){
+    return VALID_FAIL;
+  } else{
+    return VALID_PASS;
+  } // end else
+} // end of Function
+/*---------------------------- validateStringMonth ----------------------------
+  void validateStringMonth(char value[])
+  |
+  |  Purpose:  This function receives as a parameter an array holding the
+  |            the month date that is being checked. It then uses this value
+  |            and passes it as a parameter to the function validateIndividualNumber.
+  |            If the function validateIndividualNumber returns VALID_FAIL then it prints
+  |            out that something is wrong with the inputed month date.
+  |
+  |  @param  char value[] (IN) -- This parameter is the string array holding
+  |                        the characters for the specific Month date to be
+  |                        checked.
+  |
+  |  @return This function prints out a string saying something is wrong with
+  |          the String Month date if something was wrong else it doesn't do
+  |          anything hence it passed the test.
+  *-------------------------------------------------------------------*/
+int validateStringMonth(char value[]){
+  int answer = validateIndividualNumber(value);
+  if (answer == VALID_FAIL) {
+    return VALID_FAIL;
+  }
+  return VALID_PASS;
+}
+int validateIntegerMonth(int value){
+  if (value < 1 || value > 12) {
+    return VALID_FAIL;
+  }
+  return VALID_PASS;
+}
+int validateStringDay(char value[]){
+  int answer = validateIndividualNumber(value);
+  if (answer == VALID_FAIL) {
+    return VALID_FAIL;
+  }
+  return VALID_PASS;
+}
+int validateIntegerDay(int value){
+  if (value < 1 || value > 31) {
+    return VALID_FAIL;
+  }
+  return VALID_PASS;
+}
+int validateStringYear(char value[]){
+  // this should check that the year only holds the valid chracters which are
+  // numbers from 0-9 or the negative sign.
+  int answer = validateIndividualNumber(value);
+  if (answer == VALID_FAIL) {
+    return VALID_FAIL;
+  }
+  return VALID_PASS;
+}
+int validateIntegerYear(long int value){
+  /* you are passing it as a long int becasue if you pass it as an int then it
+     would have converted any number pass INT_MIN or INT_MAX into a valid
+     number. I think this had to do with how atoi() was converting the string
+     into an integer so you changed it to atol(); */
+  if (value < INT_MIN || value > INT_MAX) {
+    return VALID_FAIL;
+  }
+  return VALID_PASS;
 }
 /*---------------------------- validateIndividualNumber ----------------------------
   int validateIndividualNumber(char value[])
@@ -122,191 +277,38 @@ int validateIndividualNumber(char value[]){
   }
   return VALID_PASS; // lets say 1 is a VALID_PASS
 }
-/*---------------------------- validateStringMonth ----------------------------
-  void validateStringMonth(char value[])
-  |
-  |  Purpose:  This function receives as a parameter an array holding the
-  |            the month date that is being checked. It then uses this value
-  |            and passes it as a parameter to the function validateIndividualNumber.
-  |            If the function validateIndividualNumber returns VALID_FAIL then it prints
-  |            out that something is wrong with the inputed month date.
-  |
-  |  @param  char value[] (IN) -- This parameter is the string array holding
-  |                        the characters for the specific Month date to be
-  |                        checked.
-  |
-  |  @return This function prints out a string saying something is wrong with
-  |          the String Month date if something was wrong else it doesn't do
-  |          anything hence it passed the test.
-  *-------------------------------------------------------------------*/
-void validateStringMonth(char value[]){
-  int answer = validateIndividualNumber(value);
-  if (answer == VALID_FAIL) {
-    printf("%s\n", "Something is wrong with the String Month Date");
-  }
+void convertDate(char dateValue[], char convertedValue[]){
+  char strOldMonth[14] = "";
+  char strNewMonth[14] = "";
+  char strOldDay[14] = "";
+  char strNewDay[14] = "";
+  char strOldYear[14] = "";
+  char strNewYear[14] = "";
+  int numMonth = 0;
+  int numDay = 0;
+  /* using long int so it can store a year bigger than INT_MAX or INT_MIN and
+     then it can iterpret that number and see if something is wrong with it */
+  long int numYear = 0;
+
+  strcpy(strOldMonth, strtok(dateValue,"/"));
+  strcpy(strOldDay, strtok(NULL,"/"));
+  strcpy(strOldYear, strtok(NULL,"/"));
+  numMonth = atoi(strOldMonth);
+  numDay = atoi(strOldDay);
+  /* Same using string converter to long so that it can interpret a year bigger
+     than INT_MAX or INT_MIN */
+  numYear = atol(strOldYear);
+
+  /*********** This is meant to delete trailing zeros in the number **********/
+  sprintf(strNewMonth, "%d/", numMonth);
+  sprintf(strNewDay, "%d/", numDay);
+  sprintf(strNewYear, "%ld", numYear);
+
+  strcat(convertedValue, strNewMonth);
+  strcat(convertedValue, strNewDay);
+  strcat(convertedValue, strNewYear);
+  /***************************************************************************/
 }
-void validateStringDay(char value[]){
-  int answer = validateIndividualNumber(value);
-  if (answer == VALID_FAIL) {
-    printf("%s\n", "Something is wrong with the String Day Date");
-  }
-}
-void validateStringYear(char value[]){
-  // this should check that the year only holds the valid chracters which are
-  // numbers from 0-9 or the negative sign.
-  int answer = validateIndividualNumber(value);
-  if (answer == VALID_FAIL) {
-    printf("%s\n", "Something is wrong with the String Year Date");
-  }
-}
-
-void validateIntegerMonth(int value){
-  if (value < 1 || value > 12) {
-    printf("%s\n", "Month entered is incorrect");
-    // some how skip this date and don't save
-  }else{
-    printf("%s\n", "Month entered is valid");
-  }
-}
-void validateIntegerDay(int value) {
-  if (value < 1 || value > 31) {
-    printf("%s\n", "Day entered is incorrect");
-    // some how skip this date and don't save
-  }else{
-    printf("%s\n", "Day entered is valid");
-  }
-}
-void validateIntegerYear(long int value){
-  /* you are passing it as a long int becasue if you pass it as an int then it
-     would have converted any number pass INT_MIN or INT_MAX into a valid
-     number. I think this had to do with how atoi() was converting the string
-     into an integer so you changed it to atol(); */
-  if (value < INT_MIN || value > INT_MAX) {
-    printf("%s\n", "Year entered is incorrect");
-  }else{
-    printf("%s\n", "Year entered is valid");
-  }
-}
-
-
-
-/********************* This could be helpful don't delete ********************
-******** 1. ********
-// atoi does read negative numbers
-// char date[]= "-24";
-// int value = 0;
-// printf("value is %d\n", value);
-// value = atoi(date);
-// printf("%s\n", "");
-// printf("value is %d\n", value);
-
-******** 2. ********
-int day, year;
- char weekday[20], month[20], dtm[100];
-
- strcpy( dtm, "Saturday March 25 1989" );
- sscanf( dtm, "%s %s %d  %d", weekday, month, &day, &year );
-
- printf("%s %d, %d = %s\n", month, day, year, weekday );
-****************************************************************************/
-
-
-/*********************** research done for strcpy() ************************
-based of this we can see that if we pass it this string the result will
-be
-    - "1H12H" then it will return 1
-    - "H12H" then it will  return 0
-    - "a1" then it will return 0
-    - "1a" then it will return 1
-    - "12a" then it will return 12
-    - "1a2" then it will return 1
-Based on what i can see it will read any number correct until it reaches
-letters. If it encounters letters first then the answer will be 0.
-****************************** Test program ********************************
-int val;
-char str[20];
-
-strcpy(str, "98993489");
-val = atoi(str);
-printf("String value = %s, Int value = %d\n", str, val);
-
-strcpy(str, "12a");
-val = atoi(str);
-printf("String value = %s, Int value = %d\n", str, val);
-****************************************************************************
-****************************************************************************/
-
-// feof function 445, 458
-
-/******* something you thought might work
-// // you might need to modify the 8 so that it can receive the INT_MIN or INT_MAX
-//   char date[3][8];
+// int validateLeapYear(){
 //
-//   char str[80] = "12-12-1111";
-//   const char s[2] = "-";
-//   char *token;
-//
-//   // get the first token
-//   token = strtok(str, s);
-//
-//   // walk through other tokens
-//   while( token != NULL ) {
-//      printf( "%s\n", token );
-//
-//      count = 3;
-//       for (size_t row = 0; row < count; row++) {
-//         for (size_t column = 0; column < count; column++) {
-//           code
-//         }
-//       }
-//
-//      token = strtok(NULL, s);
-//   }
-*/
-
-
-// printf("%s", "Enter a date: ");
-// scanf("%d%*c%d%*c%d", &month, &day, &year);
-//
-//
-// printf( "month = %d day = %d year = %d\n\n", month, day, year );
-//
-// // printf("%s", "Enter a date in the form mm-dd-yyyy: ");
-// // scanf("%d%*c%d%*c%d", &month1, &day1, &year1);
-// //
-// // printf( "month = %d day = %d year = %d\n\n", month1, day1, year1 );
-
-/*
-#include <stdio.h>
-int main(void) {
-int month, day, year;
-printf("%s", "Enter a date: ");
-scanf("Enter MM/DD/YYYY %d%*c%d%*c%d\n", &month, &day, &year);
-printf("The date entered was %d/%d/%d\n", month, day, year);
-return 0;
-}
-*/
-
-/************************** PseudoCode ***************************************
-
-- read inputs from the command line until they enter EOF character
-it should be '<Ctrl> d'
-
-- validate the input that comes in so that it can be in the format of
-
-month/day/year
-EXAMPLES OF DATES ARE
-- 12/12/1900
--  1/ 5/1993
-- 02/09/1493
-
-- the max number that can be put is two integers for month
-- the max number that can be put is two integers for day
-
-Years is going to be more tricky since we can accept negative numbers
-and 0 the range for years is INT MIN and Int MAX
-- INT MIN and Int MAX may be system dependent so when you validate them
-assign them to a variable and then pass this variable to the validation
-- the max number that can be put is four integers for year
-*******************************************************************************
-*/
+// }
