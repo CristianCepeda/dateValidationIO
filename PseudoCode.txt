@@ -1,0 +1,64 @@
+/************************** PseudoCode ***************************************
+  - read inputs from the command line until they enter EOF character
+   it should be '<Ctrl> d'
+   - validate the input that comes in so that it can be in the format of
+                            month/day/year
+  EXAMPLES OF DATES ARE
+                            - 12/12/1900
+                            -  1/ 5/1993
+                            - 02/09/1493
+    - the max number that can be put is two integers for month
+    - the max number that can be put is two integers for day
+    Years is going to be more tricky since we can accept negative numbers
+    and 0 the range for years is INT MIN and Int MAX
+        - INT MIN and Int MAX may be system dependent so when you validate them
+         assign them to a variable and then pass this variable to the validation
+    - the max number that can be put is four integers for year
+
+    - check that there are only two foward slashes
+    loop through the string and have a counter to count the floward slashes
+    found in the string
+    - if there is less or more return a valid_fail
+
+    - make sure that the days are within the range some months may have 31 days
+    other may have 30 days and FEB may have 28 or 29 days
+
+    - make sure that we only have numbers in the input besides the slashes and
+    negative sign
+
+    FOR THE SECOND PROGRAM
+    create the file where it scans input or only valid dates.
+    have these dates converted
+    - see how you can append all the information form the dates file into the
+    output file.
+
+    see the examples from the book.
+
+    **************** This could be helpfull dont delete ****************
+    ******** 1. ********
+    // atoi does read negative numbers
+    // char date[]= "-24";
+    // int value = 0;
+    // printf("value is %d\n", value);
+    // value = atoi(date);
+    // printf("%s\n", "");
+    // printf("value is %d\n", value);
+    ******** 2. ********
+    int day, year;
+    char weekday[20], month[20], dtm[100];
+    strcpy( dtm, "Saturday March 25 1989" );
+    sscanf( dtm, "%s %s %d  %d", weekday, month, &day, &year );
+    printf("%s %d, %d = %s\n", month, day, year, weekday );
+    ************************************************************************/
+
+    /************* FOR VALIDATION *******************
+    have it scan the date and then pass each number into the validation
+    function
+    void validateDate(int mon)
+    */
+
+    // feof function 445, 458
+
+
+
+*******************************************************************************
